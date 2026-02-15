@@ -23,7 +23,7 @@ A Flask-based web application for generating Klipper configuration files for Vor
 - **Generate from Reference**: Create customized configs based on LDO references
 
 ### Advanced Features
-- **Monaco Editor**: Syntax highlighting for Klipper configs
+- **Ace Editor**: Self-hosted editor with Mainsail-style syntax highlighting for Klipper configs
 - **Theme Support**: Multiple color themes (Crimson, Forest, Nebula, Amber, Arctic, Voron)
 - **Better Print Start**: Enhanced macros with chamber heat soak (Ellis-style)
 - **Real-time Preview**: See configuration changes instantly
@@ -82,10 +82,10 @@ The server will start at http://localhost:3000
 7. Download the generated printer.cfg
 
 ### Using LDO Reference Configs
-1. Select a reference config from the top bar dropdown (book icon)
-2. Click the external link icon to open in a new tab
-3. Reference tabs show "ldo_ref_printer.cfg" with an orange book icon
-4. Click "Generate Config" in the toolbar to customize based on the reference
+1. Click the "LDO Refs" link in the top bar (with book icon)
+2. Browse available reference configs on the LDO references page
+3. Reference configs open in a separate page for easy viewing
+4. Return to the main configurator to generate your customized config
 
 ### Switching Themes
 Click the palette icon in the top right to switch between color themes.
@@ -159,12 +159,26 @@ The app fetches official LDO configs from:
 voron_configurator/
 ├── app.py                 # Main Flask application
 ├── templates/
-│   └── index.html         # Main web interface
+│   ├── index.html         # Main web interface
+│   └── ldo_references.html # LDO reference configs page
 ├── static/
 │   ├── css/
 │   │   └── style.css      # Application styles
 │   └── js/
-│       └── app.js         # Frontend JavaScript
+│       ├── app.js         # Frontend JavaScript
+│       └── ace/           # Self-hosted Ace Editor
+│           ├── ace.js                     # Main editor library
+│           ├── mode-klipper.js            # Klipper syntax mode
+│           ├── theme-mainsail.js          # Mainsail theme
+│           ├── ext-language_tools.js      # Autocomplete support
+│           └── theme-*.js                  # Other themes
+├── tests/                 # Test suite
+│   ├── conftest.py        # Test configuration
+│   ├── test_api.py        # API tests
+│   ├── test_ui.py         # UI tests
+│   ├── test_right_pane_updates.py
+│   ├── test_alphanumeric_highlighting.py
+│   └── test_mainsail_theme.py
 └── README.md              # This file
 ```
 
@@ -179,8 +193,9 @@ voron_configurator/
 #### app.js
 - **VoronConfigurator Class**: Main application logic
 - **Tab Management**: Create, switch, and close tabs
-- **Ace Editor Integration**: VSCode-style syntax highlighting for Klipper
+- **Ace Editor Integration**: Mainsail-style syntax highlighting for Klipper
 - **Reference Config Handling**: Load LDO configs in separate tabs
+- **Theme System**: All themes map to Mainsail dark theme
 
 #### style.css
 - **Theme System**: CSS variables for multiple color schemes
@@ -279,23 +294,27 @@ uv run pytest tests/test_ui.py -v --headed
 ### Test Structure
 ```
 tests/
-├── conftest.py          # Test configuration and fixtures
-├── test_api.py          # Backend API tests (9 tests)
-└── test_ui.py           # Frontend UI tests with Playwright
+├── conftest.py                     # Test configuration and fixtures
+├── test_api.py                     # Backend API tests (12 tests)
+├── test_ui.py                      # Frontend UI tests with Playwright
+├── test_right_pane_updates.py      # Right pane info panel tests
+├── test_alphanumeric_highlighting.py  # Syntax highlighting tests
+└── test_mainsail_theme.py          # Theme color verification tests
 ```
 
 ### API Tests (Fast)
 - Config generation for all printer types and boards
 - Leviathan STM32F446 and pin verification
 - LDO reference config endpoint validation
+- Download functionality
 
 ### UI Tests (E2E)
-- Page load and editor initialization
+- Page load and Ace Editor initialization
 - Config generation updates editor
-- Reference config loading (tabs)
-- Theme switching
-- Info panel updates
-- Download functionality
+- LDO references page functionality
+- Right pane info panel updates
+- Syntax highlighting verification
+- Theme color accuracy
 
 See `tests/README.md` for detailed testing documentation.
 
@@ -309,7 +328,7 @@ kill -9 <PID>
 ```
 
 ### Ace Editor Not Loading
-Check browser console for errors. The app uses CDN-hosted Ace editor.
+Check browser console for errors. The app uses self-hosted Ace Editor files in `static/js/ace/`.
 
 ### Reference Config Not Loading
 1. Check internet connection (fetches from GitHub)

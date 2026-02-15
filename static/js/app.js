@@ -1,4 +1,4 @@
-// Voron Configurator - Single File Version
+// Voron Configurator - Ace Editor Version
 
 class VoronConfigurator {
     constructor() {
@@ -12,79 +12,50 @@ class VoronConfigurator {
     }
 
     async init() {
-        await this.initMonacoEditor();
+        await this.initAceEditor();
         this.setupEventListeners();
         this.updateInfoPanel();
     }
 
-    async initMonacoEditor() {
-        require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs' }});
+    async initAceEditor() {
+        ace.require("ace/ext/language_tools");
         
-        return new Promise((resolve) => {
-            require(['vs/editor/editor.main'], () => {
-                monaco.languages.register({ id: 'klipper' });
-                monaco.languages.setMonarchTokensProvider('klipper', {
-                    tokenizer: {
-                        root: [
-                            [/^\[.+\]/, 'tag'],
-                            [/^#.*/, 'comment'],
-                            [/true|false/, 'keyword'],
-                            [/\d+\.?\d*/, 'number'],
-                            [/\w+:/, 'key'],
-                            [/:.+$/, 'string'],
-                            [/\^|!/, 'operator'],
-                        ]
-                    }
-                });
-
-                monaco.editor.defineTheme('klipperDark', {
-                    base: 'vs-dark',
-                    inherit: true,
-                    rules: [
-                        { token: 'tag', foreground: '569CD6', fontStyle: 'bold' },
-                        { token: 'comment', foreground: '6A9955' },
-                        { token: 'keyword', foreground: 'C586C0' },
-                        { token: 'number', foreground: 'B5CEA8' },
-                        { token: 'key', foreground: '9CDCFE' },
-                        { token: 'string', foreground: 'CE9178' },
-                        { token: 'operator', foreground: 'DCDCAA' },
-                    ],
-                    colors: {
-                        'editor.background': '#1A1A2E',
-                        'editor.lineHighlightBackground': '#16213E',
-                        'editorLineNumber.foreground': '#858585',
-                        'editorLineNumber.activeForeground': '#C6C6C6',
-                        'editor.selectionBackground': '#264F78',
-                    }
-                });
-
-                this.editor = monaco.editor.create(document.getElementById('monaco-editor'), {
-                    value: '; Voron Configurator - Based on LDO Kit Configuration\n; Select options and click Generate to create your printer.cfg',
-                    language: 'klipper',
-                    theme: 'klipperDark',
-                    automaticLayout: true,
-                    minimap: { enabled: true },
-                    fontSize: 14,
-                    fontFamily: 'JetBrains Mono, Consolas, monospace',
-                    lineNumbers: 'on',
-                    roundedSelection: false,
-                    scrollBeyondLastLine: false,
-                    readOnly: false,
-                    cursorStyle: 'line',
-                    wordWrap: 'on',
-                    folding: true,
-                    renderLineHighlight: 'line',
-                    matchBrackets: 'always',
-                });
-
-                this.editor.onDidChangeCursorPosition((e) => {
-                    document.getElementById('cursor-position').textContent = 
-                        `Ln ${e.position.lineNumber}, Col ${e.position.column}`;
-                });
-
-                resolve();
-            });
+        this.editor = ace.edit("ace-editor");
+        this.editor.setTheme("ace/theme/dracula");
+        this.editor.session.setMode("ace/mode/klipper");
+        
+        this.editor.setOptions({
+            enableBasicAutocompletion: true,
+            enableLiveAutocompletion: false,
+            enableSnippets: true,
+            showPrintMargin: false,
+            highlightActiveLine: true,
+            highlightSelectedWord: true,
+            behavioursEnabled: true,
+            wrapBehavioursEnabled: true,
+            autoScrollEditorIntoView: true,
+            copyWithEmptySelection: true,
+            useSoftTabs: true,
+            navigateWithinSoftTabs: true,
+            tabSize: 4,
+            useWorker: false
         });
+        
+        this.editor.setValue('; Voron Configurator - Based on LDO Kit Configuration\n; Select options and click Generate to create your printer.cfg', -1);
+        
+        // Set up cursor position tracking
+        this.editor.selection.on('changeCursor', () => {
+            const cursor = this.editor.selection.getCursor();
+            document.getElementById('cursor-position').textContent = 
+                `Ln ${cursor.row + 1}, Col ${cursor.column + 1}`;
+        });
+        
+        // Set up change listener for file stats
+        this.editor.session.on('change', () => {
+            this.updateFileStats();
+        });
+        
+        this.updateFileStats();
     }
 
     setupEventListeners() {
@@ -118,44 +89,24 @@ class VoronConfigurator {
     changeTheme(themeId) {
         document.body.dataset.theme = themeId;
         
-        const themeColors = {
-            'crimson': '#1A1A2E',
-            'forest': '#0F291E',
-            'nebula': '#10002B',
-            'amber': '#1C1917',
-            'arctic': '#0D1B2A',
-            'voron': '#1A1A1A'
+        const themeMap = {
+            'crimson': 'dracula',
+            'forest': 'dracula',
+            'nebula': 'dracula',
+            'amber': 'dracula',
+            'arctic': 'dracula',
+            'voron': 'dracula'
         };
-
-        const bg = themeColors[themeId] || '#1A1A2E';
-        const lineBg = bg === '#1A1A2E' ? '#16213E' : 
-                       bg === '#0F291E' ? '#1A4231' :
-                       bg === '#10002B' ? '#240046' :
-                       bg === '#1C1917' ? '#292524' :
-                       bg === '#1A1A1A' ? '#252525' : '#1B263B';
         
-        monaco.editor.defineTheme('klipperDark', {
-            base: 'vs-dark',
-            inherit: true,
-            rules: [
-                { token: 'tag', foreground: '569CD6', fontStyle: 'bold' },
-                { token: 'comment', foreground: '6A9955' },
-                { token: 'keyword', foreground: 'C586C0' },
-                { token: 'number', foreground: 'B5CEA8' },
-                { token: 'key', foreground: '9CDCFE' },
-                { token: 'string', foreground: 'CE9178' },
-                { token: 'operator', foreground: 'DCDCAA' },
-            ],
-            colors: {
-                'editor.background': bg,
-                'editor.lineHighlightBackground': lineBg,
-                'editorLineNumber.foreground': '#858585',
-                'editorLineNumber.activeForeground': '#C6C6C6',
-                'editor.selectionBackground': '#264F78',
+        const aceTheme = themeMap[themeId] || 'dracula';
+        this.editor.setTheme(`ace/theme/${aceTheme}`);
+        
+        // Also update theme for all tab editors
+        this.tabs.forEach(tab => {
+            if (tab.editor) {
+                tab.editor.setTheme(`ace/theme/${aceTheme}`);
             }
         });
-
-        monaco.editor.setTheme('klipperDark');
     }
 
     updateInfoPanel() {
@@ -164,6 +115,7 @@ class VoronConfigurator {
         const mainBoard = document.getElementById('main-board-select').selectedOptions[0].text;
         const toolheadBoard = document.getElementById('toolhead-board-select').selectedOptions[0].text;
         const motors = document.getElementById('motors-select').selectedOptions[0].text;
+        const extruder = document.getElementById('extruder-select').selectedOptions[0].text;
         const probe = document.getElementById('probe-select').selectedOptions[0].text;
         const betterMacro = document.getElementById('better-macro-checkbox').checked;
 
@@ -172,6 +124,7 @@ class VoronConfigurator {
         document.getElementById('info-main-board').textContent = mainBoard;
         document.getElementById('info-toolhead').textContent = toolheadBoard;
         document.getElementById('info-motors').textContent = motors;
+        document.getElementById('info-extruder').textContent = extruder;
         document.getElementById('info-probe').textContent = probe;
         document.getElementById('info-macros').textContent = betterMacro ? 'Better (Enhanced)' : 'Standard LDO';
     }
@@ -203,7 +156,7 @@ class VoronConfigurator {
             if (data.success) {
                 this.configContent = data.config;
                 this.currentConfig = data;
-                this.editor.setValue(this.configContent);
+                this.editor.setValue(this.configContent, -1);
                 this.updateFileStats();
                 
                 document.getElementById('download-btn').disabled = false;
@@ -221,7 +174,12 @@ class VoronConfigurator {
     }
 
     updateFileStats() {
-        const content = this.editor.getValue();
+        const editor = this.activeTab === 'main' ? this.editor : 
+                      (this.tabs.has(this.activeTab) ? this.tabs.get(this.activeTab).editor : null);
+        
+        if (!editor) return;
+        
+        const content = editor.getValue();
         const lines = content.split('\n').length;
         const chars = content.length;
         
@@ -336,7 +294,7 @@ class VoronConfigurator {
             if (data.success) {
                 // Switch to main tab and show the generated config
                 this.switchToTab('main');
-                this.editor.setValue(data.config);
+                this.editor.setValue(data.config, -1);
                 this.configContent = data.config;
                 this.currentConfig = data;
                 this.updateFileStats();
@@ -430,6 +388,7 @@ class VoronConfigurator {
         
         const editorDiv = document.createElement('div');
         editorDiv.className = 'reference-editor';
+        editorDiv.id = `ace-editor-${tabId}`;
         editorDiv.style.width = '100%';
         editorDiv.style.height = 'calc(100% - 40px)';
         
@@ -443,27 +402,33 @@ class VoronConfigurator {
         });
         
         // First make the tab visible, then create the editor
-        // This ensures Monaco gets proper dimensions
+        // This ensures the editor gets proper dimensions
         this.switchToTab(tabId);
         
-        // Initialize Monaco editor for this tab
-        const tabEditor = monaco.editor.create(editorDiv, {
-            value: content,
-            language: 'klipper',
-            theme: 'klipperDark',
-            automaticLayout: true,
-            minimap: { enabled: true },
-            fontSize: 14,
-            fontFamily: 'JetBrains Mono, Consolas, monospace',
-            lineNumbers: 'on',
-            roundedSelection: false,
-            scrollBeyondLastLine: false,
+        // Initialize Ace editor for this tab
+        const tabEditor = ace.edit(`ace-editor-${tabId}`);
+        tabEditor.setTheme("ace/theme/dracula");
+        tabEditor.session.setMode("ace/mode/klipper");
+        
+        tabEditor.setOptions({
+            enableBasicAutocompletion: true,
+            enableLiveAutocompletion: false,
+            enableSnippets: true,
+            showPrintMargin: false,
+            highlightActiveLine: true,
             readOnly: false,
-            cursorStyle: 'line',
-            wordWrap: 'on',
-            folding: true,
-            renderLineHighlight: 'line',
-            matchBrackets: 'always',
+            tabSize: 4,
+            useSoftTabs: true,
+            useWorker: false
+        });
+        
+        tabEditor.setValue(content, -1);
+        
+        // Set up cursor position tracking
+        tabEditor.selection.on('changeCursor', () => {
+            const cursor = tabEditor.selection.getCursor();
+            document.getElementById('cursor-position').textContent = 
+                `Ln ${cursor.row + 1}, Col ${cursor.column + 1}`;
         });
         
         // Store editor instance
@@ -495,11 +460,14 @@ class VoronConfigurator {
         
         this.activeTab = tabId;
         
-        // Update current editor reference
+        // Update current editor reference and resize
         if (tabId === 'main') {
-            this.editor = this.editor; // main editor stays the same
+            this.editor.resize();
         } else if (this.tabs.has(tabId)) {
-            this.editor = this.tabs.get(tabId).editor;
+            const tabEditor = this.tabs.get(tabId).editor;
+            if (tabEditor) {
+                tabEditor.resize();
+            }
         }
         
         // Update stats
@@ -511,7 +479,7 @@ class VoronConfigurator {
         
         const tab = this.tabs.get(tabId);
         if (tab && tab.editor) {
-            tab.editor.dispose();
+            tab.editor.destroy();
         }
         
         this.tabs.delete(tabId);

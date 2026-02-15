@@ -2,6 +2,7 @@
 
 import pytest
 import json
+from playwright.sync_api import Page
 
 
 class TestGenerateConfig:
@@ -146,7 +147,7 @@ class TestMainPage:
         
         assert response.status_code == 200
         assert b'Voron Configurator' in response.data
-        assert b'monaco-editor' in response.data
+        assert b'ace-editor' in response.data
 
 
 class TestReferenceView:
@@ -194,3 +195,37 @@ class TestLDOReferencesPage:
         assert response.status_code == 200
         # Should show at least one config
         assert b'Leviathan' in response.data or b'Octopus' in response.data
+
+    def test_ldo_references_page_allows_scrolling(self, page: Page, base_url):
+        """Test that the LDO references page allows scrolling (not overflow: hidden)."""
+        page.goto(f'{base_url}/ldo-references')
+        page.wait_for_timeout(500)
+        
+        # Check that body has overflow: auto or scroll, not hidden
+        body_overflow = page.evaluate("""
+            window.getComputedStyle(document.body).overflow
+        """)
+        body_overflow_y = page.evaluate("""
+            window.getComputedStyle(document.body).overflowY
+        """)
+        
+        print(f"Body overflow: {body_overflow}, overflowY: {body_overflow_y}")
+        
+        # Should NOT be 'hidden'
+        assert body_overflow != 'hidden', f"Body overflow should not be 'hidden', got: {body_overflow}"
+        assert body_overflow_y != 'hidden', f"Body overflowY should not be 'hidden', got: {body_overflow_y}"
+        
+        # Check that scrollHeight > clientHeight (content is scrollable)
+        scrollable = page.evaluate("""
+            document.documentElement.scrollHeight > document.documentElement.clientHeight
+        """)
+        print(f"Page is scrollable: {scrollable}")
+        
+        # Test actual scrolling works
+        initial_scroll = page.evaluate("window.scrollY")
+        page.evaluate("window.scrollTo(0, 100)")
+        page.wait_for_timeout(100)
+        new_scroll = page.evaluate("window.scrollY")
+        
+        print(f"Initial scroll: {initial_scroll}, After scroll: {new_scroll}")
+        assert new_scroll >= 100, f"Page should scroll down, but scrollY is {new_scroll}"

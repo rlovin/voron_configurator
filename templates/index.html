@@ -6,7 +6,10 @@
     <title>Voron Configurator</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
+    <script src="{{ url_for('static', filename='js/ace/ace.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/ace/theme-dracula.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/ace/mode-klipper.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/ace/ext-language_tools.js') }}"></script>
 </head>
 <body data-theme="arctic">
     <div class="app-container">
@@ -137,7 +140,7 @@
                     </div>
                 </div>
                 <div class="editor-content">
-                    <div id="monaco-editor" class="tab-content active" data-tab="main"></div>
+                    <div id="ace-editor" class="tab-content active" data-tab="main"></div>
                 </div>
             </div>
 

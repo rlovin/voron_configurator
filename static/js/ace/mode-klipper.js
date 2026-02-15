@@ -29,8 +29,8 @@ var KlipperHighlightRules = function() {
         ],
         
         "after_key": [
-            // Separator (= or :)
-            {token: "text", regex: /[=:]/, next: "value"}
+            // Separator (= or :) - use operator token for better visibility
+            {token: "keyword.operator", regex: /[=:]/, next: "value"}
         ],
         
         "value": [

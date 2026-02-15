@@ -12,78 +12,167 @@ class VoronConfigurator {
     }
 
     async init() {
-        await this.initMonacoEditor();
+        await this.initAceEditor();
         this.setupEventListeners();
         this.updateInfoPanel();
     }
 
-    async initMonacoEditor() {
-        require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs' }});
+    async initAceEditor() {
+        // Ace is loaded globally, no require needed
+        ace.config.set('basePath', 'https://cdn.jsdelivr.net/npm/ace-builds@1.32.0/src-min-noconflict');
+        ace.config.set('modePath', 'https://cdn.jsdelivr.net/npm/ace-builds@1.32.0/src-min-noconflict');
+        ace.config.set('themePath', 'https://cdn.jsdelivr.net/npm/ace-builds@1.32.0/src-min-noconflict');
         
-        return new Promise((resolve) => {
-            require(['vs/editor/editor.main'], () => {
-                monaco.languages.register({ id: 'klipper' });
-                monaco.languages.setMonarchTokensProvider('klipper', {
-                    tokenizer: {
-                        root: [
-                            [/^\[.+\]/, 'tag'],
-                            [/^#.*/, 'comment'],
-                            [/true|false/, 'keyword'],
-                            [/\d+\.?\d*/, 'number'],
-                            [/\w+:/, 'key'],
-                            [/:.+$/, 'string'],
-                            [/\^|!/, 'operator'],
-                        ]
-                    }
-                });
-
-                monaco.editor.defineTheme('klipperDark', {
-                    base: 'vs-dark',
-                    inherit: true,
-                    rules: [
-                        { token: 'tag', foreground: '569CD6', fontStyle: 'bold' },
-                        { token: 'comment', foreground: '6A9955' },
-                        { token: 'keyword', foreground: 'C586C0' },
-                        { token: 'number', foreground: 'B5CEA8' },
-                        { token: 'key', foreground: '9CDCFE' },
-                        { token: 'string', foreground: 'CE9178' },
-                        { token: 'operator', foreground: 'DCDCAA' },
+        // Define custom Klipper mode with VSCode-style syntax highlighting
+        ace.define('ace/mode/klipper', ['require', 'exports', 'module', 'ace/lib/oop', 'ace/mode/text', 'ace/tokenizer', 'ace/mode/klipper_highlight_rules'], function(require, exports, module) {
+            var oop = require('ace/lib/oop');
+            var TextMode = require('ace/mode/text').Mode;
+            var KlipperHighlightRules = require('ace/mode/klipper_highlight_rules').KlipperHighlightRules;
+            
+            var Mode = function() {
+                this.HighlightRules = KlipperHighlightRules;
+            };
+            oop.inherits(Mode, TextMode);
+            
+            exports.Mode = Mode;
+        });
+        
+        // Define Klipper mode with proper highlighting rules
+        ace.define('ace/mode/klipper', function(require, exports, module) {
+            var oop = require('ace/lib/oop');
+            var TextMode = require('ace/mode/text').Mode;
+            var TextHighlightRules = require('ace/mode/text_highlight_rules').TextHighlightRules;
+            
+            var KlipperHighlightRules = function() {
+                this.$rules = {
+                    'start': [
+                        // 1. Comments (highest priority) - Green
+                        {token: 'comment', regex: ';.*$'},
+                        {token: 'comment', regex: '#.*$'},
+                        
+                        // 2. Section headers [name] - Blue brackets
+                        {token: 'variable', regex: '\\[', next: 'in_section'},
+                        
+                        // 3. Include [include ...] - Magenta keyword
+                        {token: 'keyword', regex: '\\[include\\b', next: 'in_include'},
+                        
+                        // 4. Key names - match identifier at start of line (handles both = and :)
+                        {token: 'support.function', regex: '^\\s*([a-zA-Z_][a-zA-Z0-9_]*)(?=[\\s=:])', next: 'after_key'},
+                        
+                        // 5. Operators ! and ^ - Magenta
+                        {token: 'keyword', regex: '[!\\^]'},
+                        
+                        // 6. Everything else as text
+                        {token: 'text', regex: '\\s+'},
+                        {defaultToken: 'text'}
                     ],
-                    colors: {
-                        'editor.background': '#1A1A2E',
-                        'editor.lineHighlightBackground': '#16213E',
-                        'editorLineNumber.foreground': '#858585',
-                        'editorLineNumber.activeForeground': '#C6C6C6',
-                        'editor.selectionBackground': '#264F78',
-                    }
-                });
-
-                this.editor = monaco.editor.create(document.getElementById('monaco-editor'), {
-                    value: '; Voron Configurator - Based on LDO Kit Configuration\n; Select options and click Generate to create your printer.cfg',
-                    language: 'klipper',
-                    theme: 'klipperDark',
-                    automaticLayout: true,
-                    minimap: { enabled: true },
-                    fontSize: 14,
-                    fontFamily: 'JetBrains Mono, Consolas, monospace',
-                    lineNumbers: 'on',
-                    roundedSelection: false,
-                    scrollBeyondLastLine: false,
-                    readOnly: false,
-                    cursorStyle: 'line',
-                    wordWrap: 'on',
-                    folding: true,
-                    renderLineHighlight: 'line',
-                    matchBrackets: 'always',
-                });
-
-                this.editor.onDidChangeCursorPosition((e) => {
-                    document.getElementById('cursor-position').textContent = 
-                        `Ln ${e.position.lineNumber}, Col ${e.position.column}`;
-                });
-
-                resolve();
-            });
+                    
+                    'in_section': [
+                        // Section name - Orange
+                        {token: 'string', regex: '[^\\]]+', next: 'section_end'}
+                    ],
+                    
+                    'section_end': [
+                        // Closing bracket - Blue
+                        {token: 'variable', regex: '\\]', next: 'start'}
+                    ],
+                    
+                    'in_include': [
+                        // Include path - Orange
+                        {token: 'string', regex: '[^\\]]+', next: 'include_end'}
+                    ],
+                    
+                    'include_end': [
+                        // Closing bracket - Blue
+                        {token: 'variable', regex: '\\]', next: 'start'}
+                    ],
+                    
+                    'after_key': [
+                        // Equals sign or colon - White
+                        {token: 'keyword.operator', regex: '[=:]', next: 'value'}
+                    ],
+                    
+                    'value': [
+                        // Pin names (PA0, PB10, etc) - Yellow
+                        {token: 'constant', regex: '\\b[A-Z][0-9]+\\b'},
+                        
+                        // Numbers (40, 16, 1.0) - Green
+                        {token: 'constant.numeric', regex: '\\b\\d+\\.?\\d*\\b'},
+                        
+                        // Booleans - Magenta
+                        {token: 'keyword', regex: '\\b(?:true|false|yes|no|on|off)\\b'},
+                        
+                        // Quoted strings - Orange
+                        {token: 'string', regex: '"[^"]*"'},
+                        {token: 'string', regex: "'[^']*'"},
+                        
+                        // Variable references {var} - Teal
+                        {token: 'variable.parameter', regex: '\\{[^}]+\\}'},
+                        
+                        // G-code commands G1, M104 - Yellow
+                        {token: 'function', regex: '\\b[GM][0-9]+\\b'},
+                        
+                        // Continue value or end
+                        {token: 'text', regex: '\\s+'},
+                        {token: 'text', regex: '$', next: 'start'},
+                        {defaultToken: 'text'}
+                    ]
+                };
+                
+                this.normalizeRules();
+            };
+            
+            oop.inherits(KlipperHighlightRules, TextHighlightRules);
+            
+            var KlipperMode = function() {
+                this.HighlightRules = KlipperHighlightRules;
+            };
+            oop.inherits(KlipperMode, TextMode);
+            
+            exports.Mode = KlipperMode;
+        });
+        
+        this.editor = ace.edit('monaco-editor');
+        // Use tomorrow_night theme - matches Mainsail's dark theme (#1D1F21 vs #1e1e1e)
+        this.editor.setTheme('ace/theme/tomorrow_night');
+        // Use custom Klipper mode for VSCode-style syntax highlighting
+        this.editor.session.setMode('ace/mode/klipper');
+        
+        this.editor.setOptions({
+            fontSize: 14,
+            fontFamily: 'JetBrains Mono, Consolas, monospace',
+            showLineNumbers: true,
+            showGutter: true,
+            highlightActiveLine: true,
+            highlightSelectedWord: true,
+            enableBasicAutocompletion: true,
+            enableLiveAutocompletion: false,
+            enableSnippets: false,
+            wrap: true,
+            showPrintMargin: false,
+            scrollPastEnd: false,
+            readOnly: false,
+            cursorStyle: 'ace',
+            animatedScroll: true,
+            displayIndentGuides: true,
+            fadeFoldWidgets: false,
+            showFoldWidgets: true,
+            showInvisibles: false,
+            behavioursEnabled: true,
+        });
+        
+        this.editor.setValue('; Voron Configurator - Based on LDO Kit Configuration\n; Select options and click Generate to create your printer.cfg', -1);
+        
+        // Update cursor position on selection change
+        this.editor.selection.on('changeCursor', () => {
+            const cursor = this.editor.getCursorPosition();
+            document.getElementById('cursor-position').textContent = 
+                `Ln ${cursor.row + 1}, Col ${cursor.column + 1}`;
+        });
+        
+        // Update file stats on change
+        this.editor.on('change', () => {
+            this.updateFileStats();
         });
     }
 
@@ -134,44 +223,29 @@ class VoronConfigurator {
     changeTheme(themeId) {
         document.body.dataset.theme = themeId;
         
-        const themeColors = {
-            'crimson': '#1A1A2E',
-            'forest': '#0F291E',
-            'nebula': '#10002B',
-            'amber': '#1C1917',
-            'arctic': '#0D1B2A',
-            'voron': '#1A1A1A'
+        // Map app themes to Ace themes that match Mainsail's color scheme
+        // Mainsail uses: bg #1e1e1e, primary #2196f3 (material blue)
+        // tomorrow_night uses: bg #1D1F21 (very close match)
+        const aceThemes = {
+            'crimson': 'ace/theme/tomorrow_night',  // Dark blue-grey (closest to Mainsail)
+            'forest': 'ace/theme/terminal',           // Dark green-black
+            'nebula': 'ace/theme/tomorrow_night',   // Dark blue-grey
+            'amber': 'ace/theme/ambiance',          // Dark warm
+            'arctic': 'ace/theme/tomorrow_night',   // Dark blue-grey (default - matches Mainsail)
+            'voron': 'ace/theme/tomorrow_night'     // Dark blue-grey
         };
-
-        const bg = themeColors[themeId] || '#1A1A2E';
-        const lineBg = bg === '#1A1A2E' ? '#16213E' : 
-                       bg === '#0F291E' ? '#1A4231' :
-                       bg === '#10002B' ? '#240046' :
-                       bg === '#1C1917' ? '#292524' :
-                       bg === '#1A1A1A' ? '#252525' : '#1B263B';
         
-        monaco.editor.defineTheme('klipperDark', {
-            base: 'vs-dark',
-            inherit: true,
-            rules: [
-                { token: 'tag', foreground: '569CD6', fontStyle: 'bold' },
-                { token: 'comment', foreground: '6A9955' },
-                { token: 'keyword', foreground: 'C586C0' },
-                { token: 'number', foreground: 'B5CEA8' },
-                { token: 'key', foreground: '9CDCFE' },
-                { token: 'string', foreground: 'CE9178' },
-                { token: 'operator', foreground: 'DCDCAA' },
-            ],
-            colors: {
-                'editor.background': bg,
-                'editor.lineHighlightBackground': lineBg,
-                'editorLineNumber.foreground': '#858585',
-                'editorLineNumber.activeForeground': '#C6C6C6',
-                'editor.selectionBackground': '#264F78',
+        const theme = aceThemes[themeId] || 'ace/theme/tomorrow_night';
+        if (this.editor) {
+            this.editor.setTheme(theme);
+        }
+        
+        // Also update reference tab editors
+        this.tabs.forEach((tab) => {
+            if (tab.editor) {
+                tab.editor.setTheme(theme);
             }
         });
-
-        monaco.editor.setTheme('klipperDark');
     }
 
     updateInfoPanel() {
@@ -599,28 +673,30 @@ class VoronConfigurator {
         });
         
         // First make the tab visible, then create the editor
-        // This ensures Monaco gets proper dimensions
+        // This ensures Ace gets proper dimensions
         this.switchToTab(tabId);
         
-        // Initialize Monaco editor for this tab
-        const tabEditor = monaco.editor.create(editorDiv, {
-            value: content,
-            language: 'klipper',
-            theme: 'klipperDark',
-            automaticLayout: true,
-            minimap: { enabled: true },
+        // Initialize Ace editor for this tab
+        const tabEditor = ace.edit(editorDiv);
+        // Use tomorrow_night theme to match Mainsail
+        tabEditor.setTheme('ace/theme/tomorrow_night');
+        // Use custom Klipper mode for VSCode-style syntax highlighting
+        tabEditor.session.setMode('ace/mode/klipper');
+        
+        tabEditor.setOptions({
             fontSize: 14,
             fontFamily: 'JetBrains Mono, Consolas, monospace',
-            lineNumbers: 'on',
-            roundedSelection: false,
-            scrollBeyondLastLine: false,
+            showLineNumbers: true,
+            showGutter: true,
+            highlightActiveLine: true,
+            highlightSelectedWord: true,
+            wrap: true,
+            showPrintMargin: false,
+            scrollPastEnd: false,
             readOnly: false,
-            cursorStyle: 'line',
-            wordWrap: 'on',
-            folding: true,
-            renderLineHighlight: 'line',
-            matchBrackets: 'always',
         });
+        
+        tabEditor.setValue(content, -1);
         
         // Store editor instance
         this.tabs.get(tabId).editor = tabEditor;
@@ -667,7 +743,8 @@ class VoronConfigurator {
         
         const tab = this.tabs.get(tabId);
         if (tab && tab.editor) {
-            tab.editor.dispose();
+            // Ace uses destroy()
+            tab.editor.destroy();
         }
         
         this.tabs.delete(tabId);

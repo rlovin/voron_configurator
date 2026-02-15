@@ -179,7 +179,7 @@ voron_configurator/
 #### app.js
 - **VoronConfigurator Class**: Main application logic
 - **Tab Management**: Create, switch, and close tabs
-- **Monaco Editor Integration**: Syntax highlighting for Klipper
+- **Ace Editor Integration**: VSCode-style syntax highlighting for Klipper
 - **Reference Config Handling**: Load LDO configs in separate tabs
 
 #### style.css
@@ -257,6 +257,48 @@ THEMES = {
 }
 ```
 
+## Testing
+
+The project uses **pytest** with **Playwright** for comprehensive testing.
+
+### Quick Test Run
+```bash
+# Run all tests
+uv run pytest
+
+# Run only API tests (fast)
+uv run pytest tests/test_api.py -v
+
+# Run UI tests (requires browser)
+uv run pytest tests/test_ui.py -v --headed
+
+# Or use the test runner script
+./run_tests.sh
+```
+
+### Test Structure
+```
+tests/
+├── conftest.py          # Test configuration and fixtures
+├── test_api.py          # Backend API tests (9 tests)
+└── test_ui.py           # Frontend UI tests with Playwright
+```
+
+### API Tests (Fast)
+- Config generation for all printer types and boards
+- Leviathan STM32F446 and pin verification
+- LDO reference config endpoint validation
+
+### UI Tests (E2E)
+- Page load and editor initialization
+- Config generation updates editor
+- Reference config loading (tabs)
+- Theme switching
+- Info panel updates
+- Download functionality
+
+See `tests/README.md` for detailed testing documentation.
+
 ## Troubleshooting
 
 ### Port Already in Use
@@ -266,8 +308,8 @@ lsof -i :3000
 kill -9 <PID>
 ```
 
-### Monaco Editor Not Loading
-Check browser console for CORS errors. The app uses CDN-hosted Monaco editor.
+### Ace Editor Not Loading
+Check browser console for errors. The app uses CDN-hosted Ace editor.
 
 ### Reference Config Not Loading
 1. Check internet connection (fetches from GitHub)

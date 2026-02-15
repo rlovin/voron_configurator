@@ -658,6 +658,116 @@ body {
     height: 100%;
 }
 
+/* Ace Editor Styles - Matching Mainsail Theme */
+.ace_editor {
+    font-family: 'JetBrains Mono', 'Consolas', 'Monaco', monospace !important;
+    font-size: 14px !important;
+}
+
+/* Ensure Ace Editor takes full height in tabs */
+.ace_editor.ace-tomorrow-night {
+    background-color: #1D1F21 !important;
+}
+
+.ace_editor.ace-tomorrow-night .ace_gutter {
+    background: #25282c !important;
+    color: #C5C8C6 !important;
+}
+
+/* ============================================
+   VSCODE/MAINSAIL SYNTAX HIGHLIGHTING THEME
+   ============================================ */
+
+/* Comments ; and # - VSCode Green #6A9955 */
+.ace-tomorrow-night .ace_comment {
+    color: #6A9955 !important;
+    font-style: italic !important;
+}
+
+/* Section brackets [ and ] - VSCode Blue #569CD6 */
+.ace-tomorrow-night .ace_variable {
+    color: #569CD6 !important;
+    font-weight: bold;
+}
+
+/* Keywords (!, ^, true, false, yes, no, on, off) - VSCode Magenta #C586C0 */
+.ace-tomorrow-night .ace_keyword {
+    color: #C586C0 !important;
+}
+
+/* Assignment operator = - VSCode White #C5C8C6 */
+.ace-tomorrow-night .ace_keyword.ace_operator {
+    color: #C5C8C6 !important;
+}
+
+/* Keys (step_pin, dir_pin, enable_pin, etc.) - VSCode Light Blue #9CDCFE */
+.ace-tomorrow-night .ace_support.ace_function {
+    color: #9CDCFE !important;
+}
+
+/* Section names inside [brackets] like [mcu], [stepper_x] - VSCode Orange #CE9178 */
+.ace-tomorrow-night .ace_string {
+    color: #CE9178 !important;
+}
+
+/* Pin names (PA0, PB10, PG0) and device paths - VSCode Yellow #DCDCAA */
+/* Note: Use !important and higher specificity to override Ace defaults */
+.ace-tomorrow-night span.ace_constant {
+    color: #DCDCAA !important;
+}
+
+/* Numbers (40, 16, 200, 1.0, 0) - VSCode Green #B5CEA8 */
+.ace-tomorrow-night span.ace_constant.ace_numeric {
+    color: #B5CEA8 !important;
+}
+
+/* G-code commands (G28, G1, M104, etc) - VSCode Yellow #DCDCAA */
+.ace-tomorrow-night span.ace_function {
+    color: #DCDCAA !important;
+}
+
+/* Variable references {printer.speed}, {x} - VSCode Teal #4EC9B0 */
+.ace-tomorrow-night .ace_variable.ace_parameter {
+    color: #4EC9B0 !important;
+}
+
+/* Quoted strings "/dev/ttyUSB0" - VSCode Orange #CE9178 */
+.ace-tomorrow-night .ace_string.ace_quoted {
+    color: #CE9178 !important;
+}
+
+/* General identifiers - VSCode Light Blue #9CDCFE */
+.ace-tomorrow-night .ace_identifier {
+    color: #9CDCFE !important;
+}
+
+/* Default text/values - VSCode White/Light Gray #D4D4D4 */
+.ace-tomorrow-night {
+    color: #D4D4D4 !important;
+}
+
+.ace-tomorrow-night .ace_line {
+    color: #D4D4D4 !important;
+}
+
+.ace-tomorrow-night .ace_text {
+    color: #D4D4D4 !important;
+}
+
+/* Ensure all spans properly inherit */
+.ace-tomorrow-night .ace_line span {
+    color: inherit;
+}
+
+/* Reference editor container */
+.reference-editor .ace_editor {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
 /* Status Bar */
 .status-bar {
     height: var(--status-bar-height);
@@ -785,4 +895,57 @@ body {
     .tab {
         padding: 8px 12px;
     }
+}
+
+/* CodeMirror 6 Styles */
+.cm-editor {
+    height: 100%;
+    font-family: 'JetBrains Mono', 'Consolas', 'Monaco', monospace;
+    font-size: 14px;
+}
+
+.cm-editor .cm-content {
+    padding: 10px 0;
+}
+
+.cm-editor .cm-line {
+    padding: 0 4px 0 8px;
+}
+
+.cm-editor .cm-gutters {
+    background: var(--bg-surface);
+    border-right: 1px solid var(--border-color);
+    font-family: 'JetBrains Mono', 'Consolas', 'Monaco', monospace;
+    font-size: 14px;
+}
+
+.cm-editor .cm-activeLineGutter {
+    background: var(--bg-card);
+}
+
+.cm-editor .cm-foldPlaceholder {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    border-radius: 3px;
+}
+
+/* Ensure editor containers take full height */
+.tab-content {
+    height: 100%;
+}
+
+.tab-content > div:not(.reference-toolbar) {
+    height: 100%;
+}
+
+/* Reference tab content layout */
+.reference-tab-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.reference-editor {
+    flex: 1;
+    position: relative;
 }

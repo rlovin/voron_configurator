@@ -14,25 +14,34 @@ var KlipperHighlightRules = function() {
             {token: "tag", regex: /^\[[^\]]+\]/},
             
             // Key names (before = or :) - ace_keyword (light blue)
+            // This matches keys at the start of a line (possibly indented)
             {token: "keyword", regex: /^\s*([a-zA-Z_][a-zA-Z0-9_]*)(?=[=:])/, next: "after_key"},
             
-            // Everything else
+            // Indented lines that aren't keys (continuation of multi-line values)
+            // These should be highlighted as string values
+            {token: "string", regex: /^\s+.+$/, next: "start"},
+            
+            // Empty lines
+            {token: "text", regex: /^$/},
+            
+            // Everything else as text
             {defaultToken: "text"}
         ],
         
         "after_key": [
-            // Separator
+            // Separator (= or :)
             {token: "text", regex: /[=:]/, next: "value"}
         ],
         
         "value": [
-            // Skip whitespace
-            {token: "text", regex: /\s+/, next: "value"},
+            // Skip whitespace at the start of value
+            {token: "text", regex: /^\s+/, next: "value"},
             
-            // End of line
+            // End of line - go back to start
+            // If the next line is indented, it will be caught by the indented line rule in start
             {token: "text", regex: /$/, next: "start"},
             
-            // Everything in value is ace_string (salmon/orange)
+            // Everything else in the value is highlighted as string (salmon/orange)
             {defaultToken: "string", next: "value"}
         ]
     };

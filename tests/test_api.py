@@ -147,3 +147,32 @@ class TestMainPage:
         assert response.status_code == 200
         assert b'Voron Configurator' in response.data
         assert b'monaco-editor' in response.data or b'ace_editor' in response.data
+
+
+class TestReferenceView:
+    """Test the simplified reference config view page."""
+    
+    def test_reference_view_loads(self, client):
+        """Test that the reference view page loads successfully."""
+        response = client.get('/reference/voron2.4/leviathan/rev_d')
+        
+        assert response.status_code == 200
+        assert b'LDO Reference Config' in response.data
+        assert b'Leviathan Rev D' in response.data
+        assert b'reference-editor' in response.data
+        assert b'Configuration Info' in response.data
+        
+    def test_reference_view_shows_error_for_invalid_config(self, client):
+        """Test that the reference view shows error for invalid config."""
+        response = client.get('/reference/invalid/invalid/invalid')
+        
+        assert response.status_code == 200
+        assert b'Reference Config Not Found' in response.data
+        
+    def test_reference_view_has_download_button(self, client):
+        """Test that the reference view has download functionality."""
+        response = client.get('/reference/voron2.4/leviathan/rev_d')
+        
+        assert response.status_code == 200
+        assert b'downloadConfig()' in response.data
+        assert b'Download' in response.data

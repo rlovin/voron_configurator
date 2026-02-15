@@ -58,8 +58,8 @@ stealthchop_threshold: 0"""
             tokens;
         """)
         
-        # Filter for value tokens (4th part of parameter lines)
-        value_tokens = [t for t in tokens if 'string.value' in (t.get('type') or '')]
+        # Filter for value tokens (4th part of parameter lines, now 'string' type)
+        value_tokens = [t for t in tokens if t.get('type') == 'string']
         
         print("\n=== Value Tokens ===")
         for token in value_tokens:
@@ -73,7 +73,7 @@ stealthchop_threshold: 0"""
         for val in test_values:
             if val in found_values:
                 print(f"  ✓ {val}: {found_values[val]}")
-                assert 'string.value' in found_values[val], f"Value '{val}' should have 'string.value' token type"
+                assert found_values[val] == 'string', f"Value '{val}' should have 'string' token type, got: {found_values[val]}"
             else:
                 print(f"  ✗ {val}: NOT FOUND")
                 # Look for partial matches

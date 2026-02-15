@@ -39,6 +39,24 @@ def base_url():
     return "http://localhost:3000"
 
 
+@pytest.fixture(scope="session")
+def browser_context_args(browser_context_args):
+    """Browser context arguments - start minimized."""
+    return {
+        **browser_context_args,
+        "viewport": {"width": 1280, "height": 720},
+    }
+
+
+@pytest.fixture(scope="session")
+def browser_type_launch_args():
+    """Browser launch arguments - start minimized behind terminal."""
+    return {
+        "args": ["--window-position=10000,10000"],  # Position off-screen to keep behind
+        "headless": False,
+    }
+
+
 @pytest.fixture(scope="class")
 def live_server():
     """Start Flask server for testing (used by syntax tests)."""

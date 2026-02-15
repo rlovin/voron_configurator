@@ -277,9 +277,9 @@ class TestThemeConsistency:
             print(f"Theme after selector change: {theme_after_theme_change}")
             
             # Theme should have changed now
-            # Note: All themes currently map to 'dracula' in the code
-            assert 'dracula' in theme_after_theme_change.lower(), \
-                f"Expected dracula theme after selector change, got: {theme_after_theme_change}"
+            # Note: All themes currently map to 'mainsail' in the code
+            assert 'mainsail' in theme_after_theme_change.lower(), \
+                f"Expected mainsail theme after selector change, got: {theme_after_theme_change}"
 
     def test_body_data_theme_matches_selector(self, page: Page, base_url):
         """Test that body data-theme attribute matches the theme selector."""

@@ -7,49 +7,37 @@ var TextHighlightRules = require("./text_highlight_rules").TextHighlightRules;
 var KlipperHighlightRules = function() {
     this.$rules = {
         "start": [
-            // Section headers [section_name]
-            {
-                token: "keyword.section",
-                regex: /^\[[^\]]+\]/,
-                next: "start"
-            },
-            // Comments starting with #
-            {
-                token: "comment",
-                regex: /^#.*/,
-                next: "start"
-            },
-            // Parameter lines: parameter_name: value
-            // Capture the whole line and tokenize parts
-            {
-                regex: /^(\w+)(:)(\s*)(.*)$/,
-                token: ["variable.parameter", "punctuation.separator", "text", "string.value"],
-                next: "start"
-            },
-            // Standalone boolean values
-            {
-                token: "constant.language.boolean",
-                regex: /\b(?:true|false)\b/,
-                next: "start"
-            },
-            // Standalone numbers (with word boundaries to avoid matching within alphanumeric values)
-            {
-                token: "constant.numeric",
-                regex: /\b-?\d+\.?\d*\b/,
-                next: "start"
-            },
-            // Operators ^ and !
-            {
-                token: "keyword.operator",
-                regex: /[\^!]/,
-                next: "start"
-            },
-            // Default fallback
-            {
-                defaultToken: "text"
-            }
+            // Comments - ace_comment (green)
+            {token: "comment", regex: /^[#;].*$/},
+            
+            // Section headers [name] - ace_tag (cyan)
+            {token: "tag", regex: /^\[[^\]]+\]/},
+            
+            // Key names (before = or :) - ace_keyword (light blue)
+            {token: "keyword", regex: /^\s*([a-zA-Z_][a-zA-Z0-9_]*)(?=[=:])/, next: "after_key"},
+            
+            // Everything else
+            {defaultToken: "text"}
+        ],
+        
+        "after_key": [
+            // Separator
+            {token: "text", regex: /[=:]/, next: "value"}
+        ],
+        
+        "value": [
+            // Skip whitespace
+            {token: "text", regex: /\s+/, next: "value"},
+            
+            // End of line
+            {token: "text", regex: /$/, next: "start"},
+            
+            // Everything in value is ace_string (salmon/orange)
+            {defaultToken: "string", next: "value"}
         ]
     };
+    
+    this.normalizeRules();
 };
 
 oop.inherits(KlipperHighlightRules, TextHighlightRules);

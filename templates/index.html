@@ -7,9 +7,39 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="{{ url_for('static', filename='js/ace/ace.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/ace/theme-dracula.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/ace/mode-klipper.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/ace/theme-mainsail.js') }}?v=7"></script>
+    <script src="{{ url_for('static', filename='js/ace/mode-klipper.js') }}?v=7"></script>
     <script src="{{ url_for('static', filename='js/ace/ext-language_tools.js') }}"></script>
+    <style>
+        /* Force Mainsail theme colors */
+        #ace-editor,
+        #ace-editor.ace_editor,
+        .ace-mainsail,
+        .ace-mainsail .ace_content,
+        .ace-mainsail .ace_scroller {
+            background-color: #1e1e1e !important;
+        }
+        
+        /* Sections [mcu] - Bright Cyan */
+        .ace-mainsail .ace_tag {
+            color: #4ec9b0 !important;
+        }
+        
+        /* Comments - Green */
+        .ace-mainsail .ace_comment {
+            color: #6a9955 !important;
+        }
+        
+        /* Keys - Light Blue */
+        .ace-mainsail .ace_keyword {
+            color: #9cdcfe !important;
+        }
+        
+        /* Values - Salmon/Orange */
+        .ace-mainsail .ace_string {
+            color: #ce9178 !important;
+        }
+    </style>
 </head>
 <body data-theme="arctic">
     <div class="app-container">
@@ -140,7 +170,7 @@
                     </div>
                 </div>
                 <div class="editor-content">
-                    <div id="ace-editor" class="tab-content active" data-tab="main"></div>
+                    <div id="ace-editor" class="tab-content active ace-mainsail" data-tab="main"></div>
                 </div>
             </div>
 
@@ -231,5 +261,14 @@
     </div>
 
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script>
+        // Force dark theme immediately - prevent light theme flash
+        document.addEventListener('DOMContentLoaded', function() {
+            var editorEl = document.getElementById('ace-editor');
+            if (editorEl) {
+                editorEl.style.backgroundColor = '#121212';
+            }
+        });
+    </script>
 </body>
 </html>

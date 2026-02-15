@@ -21,7 +21,9 @@ class VoronConfigurator {
         ace.require("ace/ext/language_tools");
         
         this.editor = ace.edit("ace-editor");
-        this.editor.setTheme("ace/theme/dracula");
+        // Use Mainsail theme - matches actual Mainsail editor colors
+        this.editor.setTheme("ace/theme/mainsail");
+        // Use custom Klipper mode for VSCode-style syntax highlighting
         this.editor.session.setMode("ace/mode/klipper");
         
         this.editor.setOptions({
@@ -90,15 +92,15 @@ class VoronConfigurator {
         document.body.dataset.theme = themeId;
         
         const themeMap = {
-            'crimson': 'dracula',
-            'forest': 'dracula',
-            'nebula': 'dracula',
-            'amber': 'dracula',
-            'arctic': 'dracula',
-            'voron': 'dracula'
+            'crimson': 'mainsail',
+            'forest': 'mainsail',
+            'nebula': 'mainsail',
+            'amber': 'mainsail',
+            'arctic': 'mainsail',
+            'voron': 'mainsail'
         };
         
-        const aceTheme = themeMap[themeId] || 'dracula';
+        const aceTheme = themeMap[themeId] || 'mainsail';
         this.editor.setTheme(`ace/theme/${aceTheme}`);
         
         // Also update theme for all tab editors
@@ -407,7 +409,7 @@ class VoronConfigurator {
         
         // Initialize Ace editor for this tab
         const tabEditor = ace.edit(`ace-editor-${tabId}`);
-        tabEditor.setTheme("ace/theme/dracula");
+        tabEditor.setTheme("ace/theme/mainsail");
         tabEditor.session.setMode("ace/mode/klipper");
         
         tabEditor.setOptions({

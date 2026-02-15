@@ -180,6 +180,7 @@ class VoronConfigurator {
         const mainBoard = document.getElementById('main-board-select').selectedOptions[0].text;
         const toolheadBoard = document.getElementById('toolhead-board-select').selectedOptions[0].text;
         const motors = document.getElementById('motors-select').selectedOptions[0].text;
+        const extruder = document.getElementById('extruder-select').selectedOptions[0].text;
         const probe = document.getElementById('probe-select').selectedOptions[0].text;
         const betterMacro = document.getElementById('better-macro-checkbox').checked;
 
@@ -188,6 +189,7 @@ class VoronConfigurator {
         document.getElementById('info-main-board').textContent = mainBoard;
         document.getElementById('info-toolhead').textContent = toolheadBoard;
         document.getElementById('info-motors').textContent = motors;
+        document.getElementById('info-extruder').textContent = extruder;
         document.getElementById('info-probe').textContent = probe;
         document.getElementById('info-macros').textContent = betterMacro ? 'Better (Enhanced)' : 'Standard LDO';
     }

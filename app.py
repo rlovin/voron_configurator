@@ -1634,5 +1634,11 @@ description: Calibrate beacon probe
 gcode:
     BEACON_CALIBRATE"""
 
+@app.route('/ldo-references')
+def ldo_references():
+    """Show all LDO reference configs in a simple list view."""
+    return render_template('ldo_references.html',
+                         reference_configs=LDO_REFERENCE_CONFIGS)
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=3000, debug=True)

@@ -166,3 +166,31 @@ class TestReferenceView:
     def test_reference_view_has_download_button(self, client):
         """Test that the reference view has download functionality."""
         pass
+
+
+class TestLDOReferencesPage:
+    """Test the LDO references listing page."""
+    
+    def test_ldo_references_page_loads(self, client):
+        """Test that the LDO references page loads successfully."""
+        response = client.get('/ldo-references')
+        
+        assert response.status_code == 200
+        assert b'LDO Reference Configs' in response.data
+        assert b'Voron 2.4' in response.data or b'Trident' in response.data
+        
+    def test_ldo_references_page_has_link_to_main(self, client):
+        """Test that the LDO references page has link back to main configurator."""
+        response = client.get('/ldo-references')
+        
+        assert response.status_code == 200
+        assert b'Back to Configurator' in response.data
+        assert b'href="/"' in response.data
+        
+    def test_ldo_references_page_shows_configs(self, client):
+        """Test that the LDO references page shows the reference configs."""
+        response = client.get('/ldo-references')
+        
+        assert response.status_code == 200
+        # Should show at least one config
+        assert b'Leviathan' in response.data or b'Octopus' in response.data

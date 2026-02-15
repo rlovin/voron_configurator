@@ -67,6 +67,11 @@ define("ace/theme/mainsail-css",["require","exports","module"],function(e,t,n){n
   color: #9cdcfe
 }
 
+/* Separators (: and =) - Light Gray */
+.ace-mainsail .ace_text {
+  color: #808080
+}
+
 /* Values (/dev/serial..., corexy, command) - Salmon #CE9178 */
 .ace-mainsail .ace_string {
   color: #ce9178

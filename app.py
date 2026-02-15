@@ -654,45 +654,6 @@ def get_reference_config_content():
             'error': str(e)
         }), 500
 
-@app.route('/reference/<printer>/<board>/<revision>')
-def view_reference_config(printer, board, revision):
-    """View LDO reference config in simplified standalone page"""
-    import urllib.request
-    
-    config_info = LDO_REFERENCE_CONFIGS.get(printer, {}).get(board, {}).get(revision)
-    
-    if not config_info:
-        return render_template('reference.html', 
-                             error='Reference config not found',
-                             config_content=None,
-                             config_name=None,
-                             config_description=None,
-                             printer=printer,
-                             board=board,
-                             revision=revision)
-    
-    try:
-        with urllib.request.urlopen(config_info['url'], timeout=10) as response:
-            content = response.read().decode('utf-8')
-            
-            return render_template('reference.html',
-                                 config_content=content,
-                                 config_name=config_info['name'],
-                                 config_description=config_info['description'],
-                                 printer=printer,
-                                 board=board,
-                                 revision=revision,
-                                 error=None)
-    except Exception as e:
-        return render_template('reference.html',
-                             error=f'Failed to load config: {str(e)}',
-                             config_content=None,
-                             config_name=None,
-                             config_description=None,
-                             printer=printer,
-                             board=board,
-                             revision=revision)
-
 def generate_xy_driver_config(axis, main_board, run_current):
     """Generate X/Y stepper driver configuration (TMC5160 for Leviathan, TMC2209 for others)"""
     axis_pins = main_board['stepper_pins'][axis]

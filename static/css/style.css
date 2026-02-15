@@ -169,49 +169,31 @@ body {
     font-size: 13px;
 }
 
-.reference-config-selector {
+.ldo-link {
     display: flex;
     align-items: center;
     gap: 8px;
-}
-
-.reference-config-selector i {
-    color: var(--text-secondary);
-    font-size: 14px;
-}
-
-.reference-config-selector select {
-    background: var(--bg-card);
-    color: var(--text-primary);
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
     padding: 6px 12px;
-    font-size: 13px;
-    min-width: 200px;
-}
-
-.reference-config-selector .btn-icon {
     background: var(--bg-card);
     color: var(--text-primary);
     border: 1px solid var(--border-color);
     border-radius: 4px;
-    padding: 6px 10px;
-    cursor: pointer;
+    font-size: 13px;
+    text-decoration: none;
     transition: all 0.2s;
 }
 
-.reference-config-selector .btn-icon:hover:not(:disabled) {
+.ldo-link:hover {
     background: var(--accent-color);
     border-color: var(--accent-color);
     color: white;
 }
 
-.reference-config-selector .btn-icon:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    cursor: pointer;
-    outline: none;
+.ldo-link i {
+    color: var(--primary-color);
+    font-size: 14px;
 }
+
 
 .theme-selector select:hover {
     border-color: var(--primary-color);

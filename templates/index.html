@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voron Configurator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
+</head>
+<body data-theme="arctic">
+    <div class="app-container">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="top-bar-left">
+                <i class="fas fa-cube logo-icon"></i>
+                <span class="app-title">Voron Configurator</span>
+            </div>
+            <div class="top-bar-right">
+                <div class="reference-config-selector">
+                    <i class="fas fa-book"></i>
+                    <select id="ldo-ref-config-select" class="config-select">
+                        <option value="">-- LDO Reference --</option>
+                    </select>
+                    <button id="load-ref-config-btn" class="btn btn-icon" title="Load Reference Config" disabled>
+                        <i class="fas fa-download"></i>
+                    </button>
+                    <button id="open-ref-tab-btn" class="btn btn-icon" title="Open in New Tab" disabled>
+                        <i class="fas fa-external-link-alt"></i>
+                    </button>
+                </div>
+                <div class="theme-selector">
+                    <i class="fas fa-palette"></i>
+                    <select id="theme-select">
+                        {% for theme_id, theme in themes.items() %}
+                        <option value="{{ theme_id }}">{{ theme.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Layout -->
+        <div class="main-layout">
+            <!-- Left Sidebar - Configuration Options -->
+            <div class="sidebar sidebar-left">
+                <div class="sidebar-header">
+                    <i class="fas fa-sliders-h"></i>
+                    <span>Configuration</span>
+                </div>
+                
+                <div class="config-section">
+                    <div class="section-title">Printer</div>
+                    <div class="option-group">
+                        <label>Printer Model</label>
+                        <select id="printer-select" class="config-select">
+                            {% for printer_id, printer in printers.items() %}
+                            <option value="{{ printer_id }}">{{ printer.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="option-group">
+                        <label>Bed Size</label>
+                        <select id="size-select" class="config-select">
+                            <option value="250">250mm</option>
+                            <option value="300" selected>300mm</option>
+                            <option value="350">350mm</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="config-section">
+                    <div class="section-title">Controller Boards</div>
+                    <div class="option-group">
+                        <label>Main Board</label>
+                        <select id="main-board-select" class="config-select">
+                            {% for board_id, board in main_boards.items() %}
+                            <option value="{{ board_id }}">{{ board.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="option-group">
+                        <label>Toolhead Board</label>
+                        <select id="toolhead-board-select" class="config-select">
+                            {% for board_id, board in toolhead_boards.items() %}
+                            <option value="{{ board_id }}">{{ board.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="config-section">
+                    <div class="section-title">Components</div>
+                    <div class="option-group">
+                        <label>Motors</label>
+                        <select id="motors-select" class="config-select">
+                            {% for motor_id, motor in motors.items() %}
+                            <option value="{{ motor_id }}">{{ motor.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="option-group">
+                        <label>Extruder</label>
+                        <select id="extruder-select" class="config-select">
+                            {% for extruder_id, extruder in extruders.items() %}
+                            <option value="{{ extruder_id }}" {% if extruder_id == 'g2e_9t' %}selected{% endif %}>{{ extruder.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="option-group">
+                        <label>Probe</label>
+                        <select id="probe-select" class="config-select">
+                            {% for probe_id, probe in probes.items() %}
+                            <option value="{{ probe_id }}">{{ probe.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="config-section">
+                    <div class="section-title">Macros</div>
+                    <div class="option-group checkbox-option">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="better-macro-checkbox">
+                            <span class="checkmark"></span>
+                            <div class="checkbox-text">
+                                <span class="checkbox-title">Better Print Start</span>
+                                <span class="checkbox-desc">Enhanced macro with heat soak & adaptive mesh</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Center - Config Editor -->
+            <div class="editor-container">
+                <div class="editor-header">
+                    <div class="editor-tabs">
+                        <div class="tab active" data-tab="main">
+                            <i class="fas fa-file-code"></i>
+                            <span>printer.cfg</span>
+                            <button class="tab-close" style="display: none;"><i class="fas fa-times"></i></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="editor-content">
+                    <div id="monaco-editor" class="tab-content active" data-tab="main"></div>
+                </div>
+            </div>
+
+            <!-- Right Sidebar - File Info & Actions -->
+            <div class="sidebar sidebar-right">
+                <div class="sidebar-header">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Configuration Info</span>
+                </div>
+                
+                <div class="info-section">
+                    <div class="info-item">
+                        <span class="info-label">Printer:</span>
+                        <span id="info-printer" class="info-value">Voron 2.4</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Size:</span>
+                        <span id="info-size" class="info-value">300mm</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Main Board:</span>
+                        <span id="info-main-board" class="info-value">LDO Leviathan</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Toolhead:</span>
+                        <span id="info-toolhead" class="info-value">LDO Nitehawk</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Motors:</span>
+                        <span id="info-motors" class="info-value">LDO Standard Kit</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Extruder:</span>
+                        <span id="info-extruder" class="info-value">G2E (9:1)</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Probe:</span>
+                        <span id="info-probe" class="info-value">Tap</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Macros:</span>
+                        <span id="info-macros" class="info-value">Standard</span>
+                    </div>
+                </div>
+
+                <div class="sidebar-header">
+                    <i class="fas fa-file-export"></i>
+                    <span>File Stats</span>
+                </div>
+                
+                <div class="file-info">
+                    <div class="file-name">printer.cfg</div>
+                    <div class="file-stats">
+                        <span id="line-count">0 lines</span>
+                        <span id="char-count">0 chars</span>
+                    </div>
+                </div>
+
+                <div class="sidebar-header">
+                    <i class="fas fa-cogs"></i>
+                    <span>Actions</span>
+                </div>
+                
+                <div class="config-actions sidebar-actions">
+                    <button id="generate-btn" class="btn btn-primary">
+                        <i class="fas fa-magic"></i>
+                        Generate Config
+                    </button>
+                    <button id="download-btn" class="btn btn-secondary" disabled>
+                        <i class="fas fa-download"></i>
+                        Download
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Status Bar -->
+        <div class="status-bar">
+            <div class="status-left">
+                <span id="status-text">Ready</span>
+            </div>
+            <div class="status-right">
+                <span id="cursor-position">Ln 1, Col 1</span>
+                <span class="separator">|</span>
+                <span id="editor-mode">Klipper CFG</span>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

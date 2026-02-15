@@ -2,7 +2,7 @@
 
 A Flask-based web application for generating Klipper configuration files for Voron 3D printers, specifically designed for LDO kits.
 
-![Voron Configurator](screenshot.png)
+![Voron Configurator](images/screenshot.png)
 
 ## Features
 

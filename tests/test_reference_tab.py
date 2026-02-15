@@ -10,6 +10,7 @@ class TestReferenceBrowserTab:
     @pytest.mark.skip(reason="Dropdown population timing issue in test environment")
     def test_reference_opens_in_new_tab(self, page: Page, base_url):
         """Test that clicking open button opens reference in new tab."""
+        pass
         
     @pytest.mark.skip(reason="Dropdown population timing issue in test environment")
     def test_open_button_disabled_without_selection(self, page: Page, base_url):

@@ -23,20 +23,6 @@ class VoronConfigurator {
         ace.config.set('modePath', 'https://cdn.jsdelivr.net/npm/ace-builds@1.32.0/src-min-noconflict');
         ace.config.set('themePath', 'https://cdn.jsdelivr.net/npm/ace-builds@1.32.0/src-min-noconflict');
         
-        // Define custom Klipper mode with VSCode-style syntax highlighting
-        ace.define('ace/mode/klipper', ['require', 'exports', 'module', 'ace/lib/oop', 'ace/mode/text', 'ace/tokenizer', 'ace/mode/klipper_highlight_rules'], function(require, exports, module) {
-            var oop = require('ace/lib/oop');
-            var TextMode = require('ace/mode/text').Mode;
-            var KlipperHighlightRules = require('ace/mode/klipper_highlight_rules').KlipperHighlightRules;
-            
-            var Mode = function() {
-                this.HighlightRules = KlipperHighlightRules;
-            };
-            oop.inherits(Mode, TextMode);
-            
-            exports.Mode = Mode;
-        });
-        
         // Define Klipper mode with proper highlighting rules
         ace.define('ace/mode/klipper', function(require, exports, module) {
             var oop = require('ace/lib/oop');
@@ -136,7 +122,12 @@ class VoronConfigurator {
         // Use tomorrow_night theme - matches Mainsail's dark theme (#1D1F21 vs #1e1e1e)
         this.editor.setTheme('ace/theme/tomorrow_night');
         // Use custom Klipper mode for VSCode-style syntax highlighting
-        this.editor.session.setMode('ace/mode/klipper');
+        try {
+            this.editor.session.setMode('ace/mode/klipper');
+        } catch (e) {
+            console.error('Failed to load Klipper mode, falling back to INI:', e);
+            this.editor.session.setMode('ace/mode/ini');
+        }
         
         this.editor.setOptions({
             fontSize: 14,

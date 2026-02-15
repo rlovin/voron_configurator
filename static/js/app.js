@@ -205,10 +205,6 @@ class VoronConfigurator {
             this.onReferenceConfigChange(e.target.value);
         });
 
-        document.getElementById('load-ref-config-btn').addEventListener('click', () => {
-            this.loadReferenceConfig();
-        });
-
         document.getElementById('open-ref-tab-btn').addEventListener('click', () => {
             this.openReferenceConfigInTab();
         });
@@ -402,7 +398,7 @@ class VoronConfigurator {
             const data = await response.json();
             
             const select = document.getElementById('ldo-ref-config-select');
-            const loadBtn = document.getElementById('load-ref-config-btn');
+            const openTabBtn = document.getElementById('open-ref-tab-btn');
             
             // Clear existing options
             select.innerHTML = '<option value="">-- LDO Reference --</option>';
@@ -422,7 +418,7 @@ class VoronConfigurator {
             } else {
                 select.innerHTML = '<option value="">No configs</option>';
                 select.disabled = true;
-                loadBtn.disabled = true;
+                openTabBtn.disabled = true;
             }
         } catch (error) {
             console.error('Error fetching reference configs:', error);
@@ -430,32 +426,14 @@ class VoronConfigurator {
     }
 
     onReferenceConfigChange(value) {
-        const loadBtn = document.getElementById('load-ref-config-btn');
         const openTabBtn = document.getElementById('open-ref-tab-btn');
         
         if (value) {
-            loadBtn.disabled = false;
             openTabBtn.disabled = false;
         } else {
-            loadBtn.disabled = true;
             openTabBtn.disabled = true;
         }
     }
-
-    async loadReferenceConfig() {
-        const select = document.getElementById('ldo-ref-config-select');
-        const selectedKey = select.value;
-        
-        if (!selectedKey) {
-            this.showMessage('Please select a reference config', 'error');
-            return;
-        }
-        
-        // Extract printer, board and revision from the selected option's dataset
-        const option = select.selectedOptions[0];
-        const printer = option.dataset.printer;
-        const board = option.dataset.board;
-        const revision = option.dataset.revision;
         const configName = option.textContent;
         
         this.setStatus('Loading reference config...', 'loading');
